@@ -7,10 +7,10 @@ app.get('/', function (req, res) {
   res.send('Hello World!');
 });
 
-app.post(function(req, res){
+app.post('/github-webhook', function(req, res){
   console.log(req);
 
-  res.status(400);
+  res.status(202);
   res.send();
 });
 
