@@ -1,27 +1,29 @@
 version: '2.3'
 services:
   app:
-    # Add tini init for signal handling
-    init: True
 
     # Standard node image
     # https://github.com/nodejs/docker-node
-    image: "node:8"
+    build:
+      context: app
+
     working_dir: /app
     volumes:
       - ./:/app
     expose:
       - "3000"
 
-    # Runs `server.js`
     # https://docs.npmjs.com/cli/start
+    # Add tini init for signal handling
+    #
+    # Runs `server.js`
+    init: True
     command: "npm start"
   lt:
-    init: True
-
     build:
       context: localtunnel
 
+    init: True
     command: --print-requests --subdomain asford-gh-app-sand --port 3000 --local-host app
     depends_on:
       - app

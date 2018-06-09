@@ -4,7 +4,12 @@
   "description": "",
   "author": "",
   "license": "ISC",
+  "scripts" : {
+    "start" : "ts-node ./lib/server.ts"
+  },
   "dependencies": {
+    "@types/express": "^4.16.0",
+    "body-parser": "^1.18.3",
     "express": "^4.16.3"
   }
 }
