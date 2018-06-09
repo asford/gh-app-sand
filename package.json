@@ -11,6 +11,7 @@
     "watch": "mocha --watch --watch-extensions ts --recursive -r ts-node/register src/**/*.test.ts"
   },
   "dependencies": {
+    "@octokit/webhooks": "^4.0.0",
     "@types/express": "^4.16.0",
     "body-parser": "^1.18.3",
     "express": "^4.16.3",

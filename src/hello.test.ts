@@ -1,4 +1,4 @@
-import { hello } from './hello-world';
+import hello from './hello_world';
 import { expect } from 'chai';
 import 'mocha';
 

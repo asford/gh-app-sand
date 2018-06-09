@@ -1,51 +1,15 @@
 import * as express from "express";
-import * as bodyParser from "body-parser";
 import { Request, Response } from "express";
-import { hello } from './hello-world';
 
-class App {
+import { handler as hello_handler} from './hello';
+import { handler as github_handler } from './webhooks/github';
 
-  constructor() {
-    this.app = express();
-    this.config();
-    this.routes();
-  }
+let app = express()
+const port = 3000
 
-  public app: express.Application;
+app.post("/webhooks/github", github_handler)
+app.get('/hello', hello_handler);
 
-  private config(): void {
-    this.app.use(bodyParser.json());
-    this.app.use(bodyParser.urlencoded({ extended: false }));
-  }
-
-  private routes(): void {
-    const router = express.Router();
-
-    router.get('/', (req: Request, res: Response) => {
-
-      console.log(req.url);
-      console.log(req.body);
-
-      res.status(200).send({
-        message: 'Hello World!'
-      })
-    });
-
-    router.post('/github-webhook', (req: Request, res: Response) => {
-      console.log(req.url);
-      console.log(req.body);
-
-      res.status(202).send();
-    });
-
-    this.app.use('/', router)
-  }
-}
-
-let main = new App();
-
-const port = 3000;
-
-main.app.listen(port, function() {
-  console.log('Express server listening on port ' + port);
-});
+app.listen(port, function() {
+  console.log('Express server listening on port ' + port)
+})
