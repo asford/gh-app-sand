@@ -1,6 +1,7 @@
 import * as express from "express";
 import * as bodyParser from "body-parser";
 import { Request, Response } from "express";
+import { hello } from './hello-world';
 
 class App {
 
@@ -26,7 +27,7 @@ class App {
       console.log(req.body);
 
       res.status(200).send({
-        message: 'Hello World!'
+        message: hello(),
       })
     });
 
