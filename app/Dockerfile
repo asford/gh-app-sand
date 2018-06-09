@@ -1,3 +1,3 @@
 FROM node
 
-RUN npm install -g ts-node typescript
+RUN npm install -g ts-node typescript ts-node-dev

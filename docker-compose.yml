@@ -18,7 +18,7 @@ services:
     #
     # Runs `server.js`
     init: True
-    command: "npm start"
+    command: npm run dev
   lt:
     build:
       context: localtunnel
