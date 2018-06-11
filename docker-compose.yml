@@ -19,6 +19,8 @@ services:
     # Runs `server.js`
     init: True
     command: npm run dev
+    environment:
+      - DEBUG=webhooks*,sever*
   lt:
     build:
       context: localtunnel

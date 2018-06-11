@@ -1,39 +1,47 @@
-import * as express from "express";
-import * as co_body from "co-body";
-import { Request, Response } from "express";
+import * as debug from "debug";
+import * as express from "express"
+import * as co_body from "co-body"
+import * as crypto from "crypto"
+import { EventEmitter } from 'events'
+import { Request, Response } from "express"
 
-import * as sign from '@octokit/webhooks/sign'
-const secret = 'mysecret';
+const logger = debug("webhooks-github")
+
+const secret = 'mysecret'
+const emitter = new EventEmitter
 
 async function handler(req: Request, res: Response, next) {
   try {
 
     // Get body (and raw body for validation), unpack content type
     let { parsed: body, raw: raw_body } = await co_body(req, {returnRawBody: true})
-
-    if (req.header["content-type"] == "application/x-www-form-urlencoded") {
-      body = body["payload"]
+    logger("content-type: ", req.get("content-type"))
+    logger("body: ", body)
+    if (req.get("content-type") == "application/x-www-form-urlencoded") {
+      logger("parsing payload")
+      body = JSON.parse(body.payload)
     }
 
     // Validate request body via signature
-    const sig = req.headers['x-hub-signature']
-    const local_sig = sign(secret, raw_body)
-    console.log("x-hub-sig: ", sig)
-    console.log("payload-sig: ", local_sig)
+    // from @ocotokit/webhooks/sign/index.js
+    const sig = req.get('x-hub-signature')
+    const local_sig = 'sha1=' + crypto.createHmac('sha1', secret).update(raw_body).digest('hex')
+    logger("x-hub-sig: ", sig)
+    logger("payload-sig: ", local_sig)
 
     if(sig !== local_sig){
-      console.log("Invalid signature.")
+      logger("Invalid signature.")
 
       res.status(400).send({"error": "Invalid x-hub-signature."})
       return
     }
 
-    const name = req.headers['x-github-event']
-    const id = req.headers['x-github-delivery']
+    const name = req.get('x-github-event')
+    //const id = req.headers['x-github-delivery']
 
-    console.log("name: ", name)
-    console.log("id: ", id)
-    console.log(body)
+    logger("name: ", name)
+
+    emitter.emit(name, body)
 
     res.status(200).send()
   } catch(e) {
@@ -41,4 +49,5 @@ async function handler(req: Request, res: Response, next) {
   }
 }
 
-export { handler }
+
+export { handler, emitter }
