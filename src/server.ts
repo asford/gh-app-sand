@@ -5,6 +5,7 @@ import * as fs from "fs";
 import { Request, Response } from "express";
 import { set_zen, handler as zen_handler} from './zen';
 import { handler as github_handler, emitter as github_events } from './webhooks/github';
+import { handler as buildkite_handler, emitter as buildkite_events } from './webhooks/buildkite';
 
 const logger = debug("gh-app-sand:server")
 
@@ -19,6 +20,7 @@ let service = express()
 const port = 3000
 
 service.post("/webhooks/github", github_handler)
+service.post("/webhooks/buildkite", buildkite_handler)
 github_events.on("ping", function(body) {
   logger("received zen:", body.zen)
   set_zen(body.zen)
