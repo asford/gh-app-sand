@@ -1,0 +1,2 @@
+#!/bin/bash
+curl -u asford -X POST https://api.github.com/repos/asford/gh-app-sand/hooks/32590509/pings
