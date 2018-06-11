@@ -4,10 +4,12 @@ import * as co_body from "co-body"
 import * as crypto from "crypto"
 import { EventEmitter } from 'events'
 import { Request, Response } from "express"
+import * as fs from "fs"
+
 
 const logger = debug("gh-app-sand:webhooks:github")
+const secret: string = fs.readFileSync("secrets/webhooks/github").toString().trim()
 
-const secret = 'mysecret'
 const emitter = new EventEmitter
 
 async function handler(req: Request, res: Response, next) {
