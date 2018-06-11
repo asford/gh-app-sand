@@ -6,15 +6,9 @@ import { Request, Response } from "express";
 import { set_zen, handler as zen_handler} from './zen';
 import { handler as github_handler, emitter as github_events } from './webhooks/github';
 import { handler as buildkite_handler, emitter as buildkite_events } from './webhooks/buildkite';
+import { app as github_app } from './handlers/github';
 
 const logger = debug("gh-app-sand:server")
-
-const github_app_config = {
-  id: fs.readFileSync("secrets/github-app.id").toString().trim(),
-  cert: fs.readFileSync('secrets/github-app.private-key.pem')
-}
-const github_app = create_github_app(github_app_config)
-logger("github_app.id: ", github_app_config.id)
 
 let service = express()
 const port = 3000
