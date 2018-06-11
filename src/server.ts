@@ -4,7 +4,7 @@ import { Request, Response } from "express";
 import { set_zen, handler as zen_handler} from './zen';
 import { handler as github_handler, emitter as github_events } from './webhooks/github';
 
-const logger = debug("server")
+const logger = debug("gh-app-sand:server")
 
 let app = express()
 const port = 3000

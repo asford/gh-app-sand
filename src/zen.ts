@@ -2,7 +2,7 @@ import * as debug from "debug";
 import * as express from "express";
 import { Request, Response } from "express";
 
-const logger = debug("handlers-hello")
+const logger = debug("gh-app-sand:zen")
 
 const empty: string = "The mind is a blank canvas."
 let zen: string | undefined

@@ -20,7 +20,7 @@ services:
     init: True
     command: npm run dev
     environment:
-      - DEBUG=webhooks*,sever*
+      - DEBUG=gh-app-sand:*
   lt:
     build:
       context: localtunnel

@@ -5,7 +5,7 @@ import * as crypto from "crypto"
 import { EventEmitter } from 'events'
 import { Request, Response } from "express"
 
-const logger = debug("webhooks-github")
+const logger = debug("gh-app-sand:webhooks:github")
 
 const secret = 'mysecret'
 const emitter = new EventEmitter
