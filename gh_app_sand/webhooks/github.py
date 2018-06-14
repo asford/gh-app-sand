@@ -1,5 +1,4 @@
 import logging
-
 import hmac
 
 import attr
@@ -31,7 +30,7 @@ class GithubHooks:
             if not sig == local_sig:
                 return web.Response(status=401, text="invalid x-hub-signature")
 
-        # Get body cand unpack content type
+        # Get body and unpack content type
         logger.info("content-type: %s", req.headers["content-type"])
         if req.headers["content-type"] == "application/x-www-form-urlencoded":
             body = (await req.post())["payload"]

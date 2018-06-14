@@ -6,12 +6,14 @@ from aiohttp import web
 
 from .mind import Mind
 from .webhooks.github import GithubHooks
+from .webhooks.buildkite import BuildkiteHooks
 
 
 @attr.s(auto_attribs=True, slots=True)
 class Main:
     app: web.Application
     github_hooks: GithubHooks
+    buildkite_hooks: BuildkiteHooks
     mind: Mind
 
     async def get_mind(self, req: web.Request):
@@ -28,14 +30,24 @@ class Main:
         app = web.Application(loop=loop)
         github_hooks = GithubHooks(
             secret=open(sdir + "/webhooks/github", "rb").read().strip())
+        buildkite_hooks = BuildkiteHooks(
+            token=open(sdir + "/webhooks/buildkite", "r").read().strip())
         mind = Mind()
-        main = Main(app=app, github_hooks=github_hooks, mind=mind)
+        main = Main(
+            app=app,
+            github_hooks=github_hooks,
+            buildkite_hooks=buildkite_hooks,
+            mind=mind)
 
         app.router.add_get("/zen", main.get_mind)
-        app.router.add_post('/webhooks/github', github_hooks.handler)
 
+        app.router.add_post('/webhooks/github', github_hooks.handler)
         github_hooks.signals.add_handler("ping", main.store_ping)
         github_hooks.signals.freeze()
+
+        app.router.add_post('/webhooks/buildkite', buildkite_hooks.handler)
+        buildkite_hooks.signals.freeze()
+
 
         return main
 
