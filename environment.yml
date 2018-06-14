@@ -5,6 +5,7 @@ dependencies:
   - pytest
   - pip:
     - aiohttp
+    - frozendict
     - click
     - pytest-watch
     - pytest-aiohttp

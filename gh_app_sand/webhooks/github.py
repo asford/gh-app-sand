@@ -1,38 +1,49 @@
+import logging
+
 import hmac
 
-from aiohttp import web
-import os
+import attr
 
-import logging
+from aiohttp import web
+
+from ..signalset import SignalSet
+
 logger = logging.getLogger(__name__)
 
-secret = open(os.path.join(
-    os.path.dirname(__file__), "../../secrets/webhooks/github"), "rb").read()
+@attr.s(auto_attribs=True)
+class GithubHooks:
+    secret: bytes
 
-async def handler(req: web.Request):
-    # Get and validate signature
-    sig = req.headers.get('x-hub-signature')
-    if sig:
-        raw_body = await req.read()
+    signals: SignalSet = attr.Factory(SignalSet)
 
-        mac = hmac.new(b"compassion_is_a_virtue", msg=raw_body, digestmod='sha1')
-        local_sig = "sha1=" + mac.hexdigest()
+    async def handler(self, req: web.Request):
+        # Get and validate signature
+        sig = req.headers.get('x-hub-signature')
+        if sig:
+            raw_body = await req.read()
 
-        logger.info("x-hub-sig: %s", sig)
-        logger.info("payload-sig: %s", local_sig)
+            mac = hmac.new(self.secret, msg=raw_body, digestmod='sha1')
+            local_sig = "sha1=" + mac.hexdigest()
 
-        if not sig == local_sig:
-            return web.Response(status=401, text="invalid x-hub-signature")
+            logger.info("x-hub-sig: %s", sig)
+            logger.info("payload-sig: %s", local_sig)
 
-    # Get body (and raw body for validation), unpack content type
-    logger.info("content-type: %s", req.headers["content-type"])
-    if req.headers["content-type"] == "application/x-www-form-urlencoded":
-        body = (await req.post())["payload"]
-    else:
-        body = await req.json()
+            if not sig == local_sig:
+                return web.Response(status=401, text="invalid x-hub-signature")
 
-    name = req.headers['x-github-event']
-    logger.info("name: %s", name)
+        # Get body cand unpack content type
+        logger.info("content-type: %s", req.headers["content-type"])
+        if req.headers["content-type"] == "application/x-www-form-urlencoded":
+            body = (await req.post())["payload"]
+        else:
+            body = await req.json()
 
-    # emitter.emit(name, body)
-    return web.Response(status=200)
+        name = req.headers['x-github-event']
+        logger.debug("name: %s", name)
+
+        signal = self.signals.signals.get(name)
+        if signal:
+            logger.debug("resolved signals: %s", name)
+            await signal.send(name = name, body=body)
+
+        return web.Response(status=200)

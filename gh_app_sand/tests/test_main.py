@@ -2,7 +2,6 @@ import pytest
 import os
 import hmac
 
-from aiohttp import web
 from ..main import Main
 
 
@@ -17,7 +16,7 @@ def test_ping_secret():
     return open(
         os.path.join(
             os.path.dirname(__file__), "../../secrets/webhooks/github"),
-        "rb").read()
+        "rb").read().strip()
 
 
 @pytest.fixture
@@ -28,7 +27,7 @@ def test_ping_sig(test_ping_secret, test_ping_body):
 
 async def test_zen(test_client, test_ping_body, test_ping_sig):
     client = await test_client(
-        lambda loop: Main(web.Application(loop=loop)).app)
+        lambda loop: Main.setup(loop=loop).app)
 
     resp = await client.get('/')
     assert resp.status == 404
@@ -46,7 +45,7 @@ async def test_zen(test_client, test_ping_body, test_ping_sig):
             "content-type": "application/json",
         },
         data=test_ping_body)
-    assert resp.status == 200
+    assert resp.status == 200, await resp.text()
 
     resp = await client.get('/zen')
     assert resp.status == 200
