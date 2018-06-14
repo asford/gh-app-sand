@@ -1,0 +1,8 @@
+name: gh-app-sand
+dependencies:
+  - python=3.6
+  - ipython
+  - pytest
+  - pip:
+    - click
+    - pytest-watch
