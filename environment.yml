@@ -4,6 +4,8 @@ dependencies:
   - ipython
   - pytest
   - pip:
+    - attrs
+    - cattrs
     - aiohttp
     - frozendict
     - click
