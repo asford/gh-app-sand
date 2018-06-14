@@ -1,31 +1,24 @@
 version: '2.3'
 services:
+
   app:
-
-    # Standard node image
-    # https://github.com/nodejs/docker-node
     build:
-      context: app
+      context: .
+      dockerfile: app/Dockerfile
 
-    working_dir: /app
-    volumes:
-      - ./:/app
-    expose:
-      - "3000"
+    ports:
+      - "8080:8080"
 
     # https://docs.npmjs.com/cli/start
     # Add tini init for signal handling
-    #
-    # Runs `server.js`
     init: True
-    command: npm run dev
-    environment:
-      - DEBUG=gh-app-sand:*
+    command: python -m aiohttp.web -H 0.0.0.0 -P 8080 gh_app_sand.main:init
+
   lt:
     build:
       context: localtunnel
 
     init: True
-    command: --print-requests --subdomain asford-gh-app-sand --port 3000 --local-host app
+    command: --print-requests --subdomain asford-gh-app-sand --port 8080 --local-host app
     depends_on:
       - app

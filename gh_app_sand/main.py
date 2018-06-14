@@ -1,5 +1,5 @@
 import attr
-
+import asyncio
 from aiohttp import web
 
 from .mind import Mind
@@ -12,8 +12,8 @@ class Main:
     async def get_mind(self, req: web.Request):
         return web.Response(body=self.mind.thought)
 
-    @staticmethod
-    def setup(loop):
-        inst = Main(app=web.Application(loop=loop))
-        inst.app.router.add_get("/zen", inst.get_mind)
-        return inst
+    def __attrs_post_init__(self):
+        self.app.router.add_get("/zen", self.get_mind)
+
+def init(argv):
+    return Main(web.Application(loop = asyncio.get_event_loop())).app

@@ -1,10 +1,11 @@
+from aiohttp import web
 from ..main import Main
 
-def create_main(loop):
-    return Main.setup(loop).app
 
 async def test_hello(test_client):
-    client = await test_client(create_main)
+    client = await test_client(
+        lambda loop: Main(web.Application(loop=loop)).app)
+
     resp = await client.get('/')
     assert resp.status == 404
 
