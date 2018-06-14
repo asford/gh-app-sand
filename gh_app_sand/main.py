@@ -2,9 +2,10 @@ import logging
 import os
 
 import attr
+import cattr
 from aiohttp import web
 
-from .mind import Mind
+from .mind import Mind, Ping
 from .webhooks.github import GithubHooks
 from .webhooks.buildkite import BuildkiteHooks
 
@@ -19,9 +20,10 @@ class Main:
     async def get_mind(self, req: web.Request):
         return web.Response(body=self.mind.thought)
 
-    async def store_ping(self, name, body):
+    async def push_ping(self, name, body):
         assert name == "ping"
-        self.mind.thought = body["zen"]
+        ping = cattr.structure(body, Ping)
+        self.mind.listen(ping)
 
     @staticmethod
     def setup(loop=None):
@@ -42,7 +44,7 @@ class Main:
         app.router.add_get("/zen", main.get_mind)
 
         app.router.add_post('/webhooks/github', github_hooks.handler)
-        github_hooks.signals.add_handler("ping", main.store_ping)
+        github_hooks.signals.add_handler("ping", main.push_ping)
         github_hooks.signals.freeze()
 
         app.router.add_post('/webhooks/buildkite', buildkite_hooks.handler)
