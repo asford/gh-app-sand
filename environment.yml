@@ -4,5 +4,7 @@ dependencies:
   - ipython
   - pytest
   - pip:
+    - aiohttp
     - click
     - pytest-watch
+    - pytest-aiohttp
