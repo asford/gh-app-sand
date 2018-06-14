@@ -8,11 +8,14 @@ services:
 
     ports:
       - "8080:8080"
+    working_dir: /app
+    volumes:
+      - ./:/app
 
     # https://docs.npmjs.com/cli/start
     # Add tini init for signal handling
     init: True
-    command: python -m aiohttp.web -H 0.0.0.0 -P 8080 gh_app_sand.main:init
+    command: adev runserver -p 8080 -v gh_app_sand
 
   lt:
     build:

@@ -15,5 +15,8 @@ class Main:
     def __attrs_post_init__(self):
         self.app.router.add_get("/zen", self.get_mind)
 
-def init(argv):
+def main(argv):
     return Main(web.Application(loop = asyncio.get_event_loop())).app
+
+def create_app(loop):
+    return Main(web.Application(loop = loop)).app
