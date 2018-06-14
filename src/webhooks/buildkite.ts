@@ -17,7 +17,7 @@ async function handler(req: Request, res: Response, next) {
     // Get body (and raw body for validation), unpack content type
     let body = await co_body.json(req)
     logger("content-type: ", req.get("content-type"))
-    logger("body: ", body)
+    logger("body: %j", body)
 
     // Validate request token
     const token = req.get('X-Buildkite-Token')

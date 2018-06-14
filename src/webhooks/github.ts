@@ -18,11 +18,12 @@ async function handler(req: Request, res: Response, next) {
     // Get body (and raw body for validation), unpack content type
     let { parsed: body, raw: raw_body } = await co_body(req, {returnRawBody: true})
     logger("content-type: ", req.get("content-type"))
-    logger("body: ", body)
     if (req.get("content-type") == "application/x-www-form-urlencoded") {
       logger("parsing payload")
       body = JSON.parse(body.payload)
     }
+
+    logger("body: %j", body)
 
     // Validate request body via signature
     // from @ocotokit/webhooks/sign/index.js
