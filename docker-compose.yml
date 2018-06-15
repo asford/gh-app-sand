@@ -4,7 +4,7 @@ services:
   app:
     build:
       context: .
-      dockerfile: app/Dockerfile
+      dockerfile: containers/app.Dockerfile
 
     ports:
       - "8080:8080"
@@ -19,7 +19,8 @@ services:
 
   lt:
     build:
-      context: localtunnel
+      context: .
+      dockerfile: containers/localtunnel.Dockerfile
 
     init: True
     command: --print-requests --subdomain asford-gh-app-sand --port 8080 --local-host app
