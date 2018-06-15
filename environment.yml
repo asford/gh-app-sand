@@ -11,3 +11,4 @@ dependencies:
     - click
     - pytest-watch
     - pytest-aiohttp
+    - giturlparse
