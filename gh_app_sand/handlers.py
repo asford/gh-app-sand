@@ -1,33 +1,33 @@
 from typing import Optional, Union, List
 
-from .types import buildkite
-from .types.github import checks
+from .buildkite import jobs
+from .github import checks
 
 import giturlparse
 
 
-def buildkite_state_github_status(state: buildkite.State) -> checks.Status:
+def buildkite_state_github_status(state: jobs.State) -> checks.Status:
     return {
-        buildkite.State.scheduled: checks.Status.queued,
-        buildkite.State.running: checks.Status.in_progress,
-        buildkite.State.canceling: checks.Status.in_progress,
-        buildkite.State.blocked: checks.Status.in_progress,
+        jobs.State.scheduled: checks.Status.queued,
+        jobs.State.running: checks.Status.in_progress,
+        jobs.State.canceling: checks.Status.in_progress,
+        jobs.State.blocked: checks.Status.in_progress,
     }.get(state, checks.Status.completed)
 
 
 def buildkite_state_github_conclusion(
-        state: buildkite.State) -> Optional[checks.Conclusion]:
+        state: jobs.State) -> Optional[checks.Conclusion]:
     return {
-        buildkite.State.passed: checks.Conclusion.success,
-        buildkite.State.failed: checks.Conclusion.failure,
-        buildkite.State.blocked: checks.Conclusion.action_required,
-        buildkite.State.canceled: checks.Conclusion.cancelled,
-        buildkite.State.skipped: checks.Conclusion.neutral,
-        buildkite.State.not_run: checks.Conclusion.neutral,
+        jobs.State.passed: checks.Conclusion.success,
+        jobs.State.failed: checks.Conclusion.failure,
+        jobs.State.blocked: checks.Conclusion.action_required,
+        jobs.State.canceled: checks.Conclusion.cancelled,
+        jobs.State.skipped: checks.Conclusion.neutral,
+        jobs.State.not_run: checks.Conclusion.neutral,
     }.get(state, None)
 
 def job_hook_to_check_action(
-        job_hook: buildkite.JobHook,
+        job_hook: jobs.JobHook,
         checks_for_commit: List[checks.RunDetails],
 ) -> Union[checks.CreateRun, checks.UpdateRun]:
     check_details = job_to_run_details(job_hook.job)
@@ -57,7 +57,7 @@ def job_hook_to_check_action(
 
     return action
 
-def job_to_run_details(job: buildkite.Job) -> checks.RunDetails:
+def job_to_run_details(job: jobs.Job) -> checks.RunDetails:
     return checks.RunDetails(
         name=job.name,
         details_url=job.web_url,

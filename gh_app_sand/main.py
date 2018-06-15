@@ -6,8 +6,8 @@ import cattr
 from aiohttp import web
 
 from .mind import Mind, Ping
-from .webhooks.github import GithubHooks
-from .webhooks.buildkite import BuildkiteHooks
+from .github.webhooks import GithubHooks
+from .buildkite.webhooks import BuildkiteHooks
 
 
 @attr.s(auto_attribs=True, slots=True)

@@ -5,8 +5,8 @@ import pytest
 
 import cattr
 
-from ..types import buildkite
-from ..types.github import checks
+from ..buildkite import jobs
+from ..github import checks
 
 from ..handlers import job_hook_to_check_action
 
@@ -21,7 +21,7 @@ def test_events():
 
 def test_job_conversion(test_events):
     events = {
-        k : cattr.structure(e, buildkite.JobHook)
+        k : cattr.structure(e, jobs.JobHook)
         for k, e in test_events.items()
     }
 
