@@ -1,5 +1,9 @@
 attrs
 cattrs
 aiohttp
+aiorun
 frozendict
 giturlparse
+decorator
+pytest
+pytest-asyncio

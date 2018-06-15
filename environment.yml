@@ -7,8 +7,11 @@ dependencies:
     - attrs
     - cattrs
     - aiohttp
+    - aiorun
     - frozendict
     - click
     - pytest-watch
     - pytest-aiohttp
+    - pytest-asyncio
     - giturlparse
+    - decorator

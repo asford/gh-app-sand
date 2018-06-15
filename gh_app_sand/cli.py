@@ -1,15 +1,32 @@
 import logging
 import json
 
+import aiohttp
+import aiorun
+import asyncio
 import click
+from decorator import decorator
 
 from .github.identity import AppIdentity
-from .github.gitcredentials import app_session_for, installation_token_for, credential_helper
+from .github.gitcredentials import installation_token_for, credential_helper
 
 logger = logging.getLogger(__name__)
 
 #https://developer.github.com/apps/building-github-apps/authenticating-with-github-apps/#authenticating-as-a-github-app
 pass_appidentity = click.make_pass_decorator(AppIdentity, ensure=True)
+
+
+@decorator
+def aiomain(coro, *args, **kwargs):
+    aiorun.logger.setLevel(51)
+
+    async def main():
+        try:
+            await coro(*args, **kwargs)
+        finally:
+            asyncio.get_event_loop().stop()
+
+    return aiorun.run(main())
 
 
 @click.group()
@@ -47,37 +64,43 @@ def main(ctx, app_id, private_key, verbose):
 @main.add_command
 @click.command(help="Resolve app id/key and check app authentication.")
 @pass_appidentity
-def current(appidentity):
-    session = app_session_for(appidentity)
-    installations = session.get("https://api.github.com/app")
-    installations.raise_for_status()
-    print(json.dumps(installations.json(), indent=2))
+@aiomain
+async def current(appidentity: AppIdentity):
+    async with aiohttp.ClientSession(
+            headers=appidentity.app_headers(), ) as session:
+        async with session.get('https://api.github.com/app', ) as resp:
+            resp.raise_for_status()
+            print(json.dumps(await resp.json(), indent=2))
 
 
 @main.add_command
 @click.command(help="Generate access token for installation.")
 @pass_appidentity
 @click.argument('account')
-def token(appidentity, account):
-    print(installation_token_for(account, appidentity))
+@aiomain
+async def token(appidentity, account):
+    print(await installation_token_for(account, appidentity))
+
 
 @main.group(help="git-credential helper implementation.")
 def credential():
     pass
+
 
 @credential.add_command
 @click.command(help="Credential storage helper implementation.")
 @pass_appidentity
 @click.argument('input', type=click.File('r'), default="-")
 @click.argument('output', type=click.File('w'), default="-")
-def get(appidentity, input, output):
+@aiomain
+async def get(appidentity, input, output):
     # https://git-scm.com/docs/git-credential
     logger.debug("get id: %s input: %s output: %s", appidentity, input, output)
 
-    def token_for_account(account):
-        return installation_token_for(account, appidentity)["token"]
+    async def token_for_account(account):
+        return (await installation_token_for(account, appidentity))["token"]
 
-    output.write(credential_helper(input.read(), token_for_account))
+    output.write(await credential_helper(input.read(), token_for_account))
     output.write("\n")
 
 

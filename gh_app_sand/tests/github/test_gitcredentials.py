@@ -2,22 +2,26 @@ import pytest
 
 from ...github.gitcredentials import credential_helper
 
-def test_credential_helper():
-    test_tokens = {"test": "testtoken", "test2": "testtoken2"}
+pytestmark = pytest.mark.asyncio
+
+
+async def test_credential_helper():
+    async def test_token(name):
+        return {"test": "testtoken", "test2": "testtoken2"}.get(name)
 
     ssh = """
 host=github.com
 protocol=ssh
     """.strip()
 
-    assert ssh == credential_helper(ssh, test_tokens.get)
+    assert ssh == await credential_helper(ssh, test_token)
 
     no_path = """
 host=github.com
 protocol=https
     """.strip()
 
-    assert no_path == credential_helper(no_path, test_tokens.get)
+    assert no_path == await credential_helper(no_path, test_token)
 
     test_repo = """
 host=github.com
@@ -32,7 +36,7 @@ username=x-access-token
 password=testtoken
     """.strip()
 
-    assert test_repo_expected == credential_helper(test_repo, test_tokens.get)
+    assert test_repo_expected == await credential_helper(test_repo, test_token)
 
     test2_repo = """
 host=github.com
@@ -47,7 +51,8 @@ username=x-access-token
 password=testtoken2
     """.strip()
 
-    assert test2_repo_expected == credential_helper(test2_repo, test_tokens.get)
+    assert test2_repo_expected == await credential_helper(
+        test2_repo, test_token)
 
     override_name = """
 host=github.com
@@ -63,11 +68,12 @@ username=x-access-token
 password=testtoken
     """.strip()
 
-    assert override_name_expected == credential_helper(override_name, test_tokens.get)
+    assert override_name_expected == await credential_helper(
+        override_name, test_token)
 
     invalid_input = """
 host=github.com
 wat
     """.strip()
     with pytest.raises(ValueError):
-        credential_helper(invalid_input, test_tokens.get)
+        await credential_helper(invalid_input, test_token)

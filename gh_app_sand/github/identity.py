@@ -1,4 +1,4 @@
-from typing import Optional, Union
+from typing import Optional, Union, Dict
 
 import os
 import time
@@ -89,3 +89,9 @@ class AppIdentity:
         logging.debug("Issuing app jwt: %s", payload)
 
         return jwt.encode(payload, self.private_key, algorithm='RS256').decode()
+
+    def app_headers(self) -> Dict[str, str]:
+        return {
+            "Authorization":"Bearer %s" % self.jwt(),
+            "Accept": "application/vnd.github.machine-man-preview+json"
+        }

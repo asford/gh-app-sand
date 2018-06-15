@@ -1,41 +1,42 @@
 import logging
-from typing import Callable
+from typing import Callable, Awaitable
 from .identity import AppIdentity
 
-import requests
+import aiohttp
 
 logger = logging.getLogger(__name__)
 
-def app_session_for(app: AppIdentity) -> requests.Session:
-    session = requests.Session()
-    session.headers.update({
-        "Authorization":"Bearer %s" % app.jwt(),
-        "Accept": "application/vnd.github.machine-man-preview+json"
-    })
 
-    return session
+async def installation_token_for(account: str, app: AppIdentity):
+    async with aiohttp.ClientSession(headers=app.app_headers(), ) as session:
 
-def installation_token_for(account: str, app: AppIdentity):
-    session = app_session_for(app)
-    installations = session.get("https://api.github.com/app/installations")
-    installations.raise_for_status()
+        async with session.get(
+                'https://api.github.com/app/installations') as resp:
+            resp.raise_for_status()
+            installations = await resp.json()
 
-    ids_by_account = { i["account"]["login"] : i["id"] for i in installations.json() }
+        ids_by_account = {
+            i["account"]["login"]: i["id"]
+            for i in installations
+        }
 
-    if account not in ids_by_account:
-        return None
+        if account not in ids_by_account:
+            return None
 
-    token = session.post("https://api.github.com/app/installations/%i/access_tokens" % ids_by_account[account])
-    token.raise_for_status()
-    return token.json()
+        token_url = (
+            "https://api.github.com/app/installations/%i/access_tokens" %
+            ids_by_account[account])
 
-def credential_helper(credential_input: str, get_token_for_account: Callable[[str], str] ) -> str:
-    """git-credential helper implementation
+        async with session.post(token_url) as resp:
+            resp.raise_for_status()
+            return await resp.json()
 
-    Maps 'https://github.com/<account>' into """
+async def credential_helper(credential_input: str,
+                      get_token_for_account: Callable[[str], Awaitable[str]]) -> str:
     logger.info("credential_input: %s", credential_input)
 
-    cvals = dict(l.strip().split("=", 1) for l in credential_input.split("\n") if l.strip())
+    cvals = dict(l.strip().split("=", 1) for l in credential_input.split("\n")
+                 if l.strip())
     logger.debug("cvals: %s", cvals)
 
     if not cvals.get("host", None) == "github.com":
@@ -50,11 +51,11 @@ def credential_helper(credential_input: str, get_token_for_account: Callable[[st
         return credential_input
 
     account = cvals.get("path", "").split("/")[0]
-    token = get_token_for_account(account)
+    token = await get_token_for_account(account)
     if not token:
         return credential_input
 
-    cvals["username"]="x-access-token"
-    cvals["password"]=token
+    cvals["username"] = "x-access-token"
+    cvals["password"] = token
 
     return "\n".join("=".join(i) for i in cvals.items())
