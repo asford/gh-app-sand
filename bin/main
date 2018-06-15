@@ -1,3 +1,0 @@
-#!/bin/bash
-
-python -m gh_app_sand $*
