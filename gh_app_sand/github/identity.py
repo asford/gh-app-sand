@@ -7,6 +7,8 @@ import logging
 import attr
 import jwt
 
+import aiohttp
+
 logger = logging.getLogger(__name__)
 
 @attr.s(frozen=True)
@@ -95,3 +97,29 @@ class AppIdentity:
             "Authorization":"Bearer %s" % self.jwt(),
             "Accept": "application/vnd.github.machine-man-preview+json"
         }
+
+    async def installation_token_for(self, account: str, session: Optional[aiohttp.ClientSession] = None):
+        if session is None:
+            async with aiohttp.ClientSession(headers=self.app_headers(), ) as session:
+                return await self.installation_token_for(account, session)
+
+        async with session.get(
+                'https://api.github.com/app/installations') as resp:
+            resp.raise_for_status()
+            installations = await resp.json()
+
+        ids_by_account = {
+            i["account"]["login"]: i["id"]
+            for i in installations
+        }
+
+        if account not in ids_by_account:
+            return None
+
+        token_url = (
+            "https://api.github.com/app/installations/%i/access_tokens" %
+            ids_by_account[account])
+
+        async with session.post(token_url) as resp:
+            resp.raise_for_status()
+            return await resp.json()

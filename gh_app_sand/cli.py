@@ -8,7 +8,7 @@ import click
 from decorator import decorator
 
 from .github.identity import AppIdentity
-from .github.gitcredentials import installation_token_for, credential_helper
+from .github.gitcredentials import credential_helper
 
 logger = logging.getLogger(__name__)
 
@@ -79,7 +79,7 @@ async def current(appidentity: AppIdentity):
 @click.argument('account')
 @aiomain
 async def token(appidentity, account):
-    print(await installation_token_for(account, appidentity))
+    print(await appidentity.installation_token_for(account))
 
 
 @main.group(help="git-credential helper implementation.")
@@ -96,11 +96,7 @@ def credential():
 async def get(appidentity, input, output):
     # https://git-scm.com/docs/git-credential
     logger.debug("get id: %s input: %s output: %s", appidentity, input, output)
-
-    async def token_for_account(account):
-        return (await installation_token_for(account, appidentity))["token"]
-
-    output.write(await credential_helper(input.read(), token_for_account))
+    output.write(await credential_helper(input.read(), appidentity.installation_token_for))
     output.write("\n")
 
 
