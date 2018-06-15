@@ -2,7 +2,7 @@ import pytest
 import os
 import hmac
 
-from ..main import Main
+from ..app import Main
 
 
 @pytest.fixture
